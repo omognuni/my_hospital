@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "my-hospital"
+version = "0.1.0"
+description = ""
+authors = ["omognuni <melbong0069@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Django = "<=5.0"
+djangorestframework = "^3.14.0"
+pytest = "^8.0.2"
+django-filter = "^23.5"
+pytest-django = "^4.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
