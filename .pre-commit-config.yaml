@@ -20,9 +20,3 @@ repos:
       - id: black
         name: Formatting(black)
         language_version: python3
-  - repo: https://github.com/asottile/reorder-python-imports
-    rev: v3.12.0
-    hooks:
-    -   id: reorder-python-imports
-        exclude: ^(pre_commit/resources/|testing/resources/python3_hooks_repo/)
-        args: [--py39-plus, --add-import, 'from __future__ import annotations']
