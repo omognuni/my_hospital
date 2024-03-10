@@ -1,16 +1,14 @@
-from __future__ import annotations
-
 from enum import Enum
 
 
-class Days(str, Enum):
-    MON = "monday"
-    TUE = "tuesday"
-    WED = "wednesday"
-    THU = "thursday"
-    FRI = "friday"
-    SAT = "saturday"
-    SUN = "sunday"
+class Days(Enum):
+    monday = 0  # 월요일
+    tuesday = 1  # 화요일
+    wednesday = 2  # 수요일
+    thursday = 3  # 목요일
+    friday = 4  # 금요일
+    saturday = 5  # 토요일
+    sunday = 6  # 일요일
 
     @classmethod
     def choices(cls):
@@ -18,10 +16,10 @@ class Days(str, Enum):
 
     @classmethod
     def values(cls):
-        return (x.value for x in cls)
+        return tuple(x.value for x in cls)
 
     def __str__(self):
-        return self.value
+        return self.name
 
 
 class RequestStatus(str, Enum):
