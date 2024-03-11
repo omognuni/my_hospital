@@ -128,7 +128,10 @@ class TreatmentRequest(models.Model):
 
     def _get_next_hours(self, day):
         day = (day + 1) % 7
-        hours = self.doctor.hours.filter(day__gte=day).order_by("day").first()
+        hours = self.doctor.hours.filter(day__gte=day).order_by("day")
+        if not hours.exists():
+            hours = self.doctor.hours.filter(day__lte=day).order_by("-day")
+        hours = hours.first()
         return hours
 
     @property
@@ -142,13 +145,17 @@ class TreatmentRequest(models.Model):
 
             # self.doctor.hours에서 해당 요일의 영업시간 가져오기
             hours = self.doctor.hours.filter(day=day)
+            print(hours.query)
             if hours.exists():
+                hours = hours.first()
                 if self._in_range(created_time, hours.first_session) or self._in_range(
                     created_time, hours.second_session
                 ):
                     duration = timedelta(minutes=20)
                     self.expired_datetime = self.created_datetime + duration
-                elif self._in_range(created_time, hours.lunch_time_range):
+                elif hours.has_lunch_time and self._in_range(
+                    created_time, hours.lunch_time_range
+                ):
                     duration = timedelta(minutes=15)
                     self.expired_datetime = (
                         datetime.combine(
@@ -160,7 +167,7 @@ class TreatmentRequest(models.Model):
             if self.expired_datetime is None:
                 hours = self._get_next_hours(day)
                 day_diff = hours.day - day
-                if day_diff < 0:
+                if day_diff <= 0:
                     day_diff = day_diff + 7
                 duration = timedelta(minutes=15)
                 expired_date = self.created_datetime.date() + timedelta(days=day_diff)
