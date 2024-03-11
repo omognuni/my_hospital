@@ -2,15 +2,7 @@ from datetime import datetime, time, timedelta
 
 import pytest
 from clinic.enums import Days, RequestStatus
-from clinic.models import (
-    BusinessHours,
-    Department,
-    Doctor,
-    Hospital,
-    Patient,
-    TreatmentRequest,
-    UninsuredTreatment,
-)
+from clinic.models import BusinessHours, Doctor, Patient, TreatmentRequest
 
 
 def get_next_weekday(weekday, date):
@@ -73,9 +65,3 @@ def test_request_treatment():
         minutes=15
     )
     assert treatment_request.status == RequestStatus.PENDING
-
-
-@pytest.mark.django_db
-def test_search_doctor():
-    # given
-    doctor = Doctor.objects.create(name="손웅래")
