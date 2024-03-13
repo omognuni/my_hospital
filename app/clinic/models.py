@@ -91,6 +91,16 @@ class BusinessHours(models.Model):
         return False
 
     @property
+    def 점심시간(self):
+        if self.has_lunch_time:
+            return f"{self.lunch_start_time.strftime('%H:%M')}~{self.lunch_end_time.strftime('%H:%M')}"
+        return None
+
+    @property
+    def 영업시간(self):
+        return f"{self.opening_time.strftime('%H:%M')}~{self.closing_time.strftime('%H:%M')}"
+
+    @property
     def first_session(self):
         if self.has_lunch_time:
             return (self.opening_time, self.lunch_start_time)
