@@ -85,6 +85,10 @@ class BusinessHour(models.Model):
         unique_together = (("doctor", "day"),)
 
     @property
+    def 요일(self):
+        return Days.choices()[self.day][1]
+
+    @property
     def has_lunch_time(self):
         if self.lunch_start_time is not None:
             return True
@@ -168,6 +172,9 @@ class TreatmentRequest(models.Model):
 
     @property
     def is_available(self):
+        # 과거의 시간으로 예약 금지
+        if self.desired_datetime <= datetime.now():
+            return False
         # desired_datetime을 요일로 분리
         day = self.desired_datetime.weekday()
 
