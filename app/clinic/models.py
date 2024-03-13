@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from clinic.enums import Days, RequestStatus
 from django.db import models
 
+DAYS_IN_WEEK = 7
+
 
 class Hospital(models.Model):
     name = models.CharField(max_length=200, blank=True)
@@ -121,19 +123,6 @@ class TreatmentRequest(models.Model):
         max_length=100, choices=RequestStatus.choices(), default=RequestStatus.PENDING
     )
 
-    def _in_range(self, time, time_range):
-        if time_range[0] <= time <= time_range[1]:
-            return True
-        return False
-
-    def _get_next_hours(self, day):
-        day = (day + 1) % 7
-        hours = self.doctor.hours.filter(day__gte=day).order_by("day")
-        if not hours.exists():
-            hours = self.doctor.hours.filter(day__lte=day).order_by("-day")
-        hours = hours.first()
-        return hours
-
     @property
     def is_expired(self):
         if self.status == RequestStatus.EXPIRED:
@@ -141,44 +130,30 @@ class TreatmentRequest(models.Model):
         if self.expired_datetime is None:
             # created_datetime 요일
             day = self.created_datetime.weekday()
-            created_time = self.created_datetime.time()
 
             # self.doctor.hours에서 해당 요일의 영업시간 가져오기
-            hours = self.doctor.hours.filter(day=day)
-            print(hours.query)
-            if hours.exists():
-                hours = hours.first()
-                if self._in_range(created_time, hours.first_session) or self._in_range(
-                    created_time, hours.second_session
-                ):
-                    duration = timedelta(minutes=20)
-                    self.expired_datetime = self.created_datetime + duration
-                elif hours.has_lunch_time and self._in_range(
-                    created_time, hours.lunch_time_range
-                ):
-                    duration = timedelta(minutes=15)
-                    self.expired_datetime = (
-                        datetime.combine(
-                            self.created_datetime.date(), hours.lunch_end_time
-                        )
-                        + duration
-                    )
-            # 영업시간이 없다면 가장 가까운 요일의 영업시간 가져오기
+            hours = self.doctor.hours.filter(day=day).first()
+
+            # 해당 영업 시간과 요청 시간이 일치하는지 확인하고 만료 시간 설정
+            if hours:
+                self._check_business_hours(hours)
+
+            # 일치하는 영업시간이 없다면 가장 가까운 요일의 영업시간 가져오기
             if self.expired_datetime is None:
-                hours = self._get_next_hours(day)
-                day_diff = hours.day - day
-                if day_diff <= 0:
-                    day_diff = day_diff + 7
+                hours = self._find_next_business_hours(day)
+                day_diff = (hours.day - day) % DAYS_IN_WEEK
                 duration = timedelta(minutes=15)
-                expired_date = self.created_datetime.date() + timedelta(days=day_diff)
-                self.expired_datetime = (
-                    datetime.combine(expired_date, hours.opening_time) + duration
+                start_date = datetime.combine(
+                    self.created_datetime.date() + timedelta(days=day_diff),
+                    hours.opening_time,
                 )
+                self._set_expired_datetime(start_date, duration)
 
         if self.expired_datetime <= datetime.now():
             self.status = RequestStatus.EXPIRED
+            self.save()
             return True
-        self.save()
+
         return False
 
     @property
@@ -200,3 +175,35 @@ class TreatmentRequest(models.Model):
             return True
 
         return False
+
+    def _in_range(self, time, time_range):
+        if time_range[0] <= time <= time_range[1]:
+            return True
+        return False
+
+    def _find_next_business_hours(self, day):
+        next_day = (day + 1) % DAYS_IN_WEEK
+        hours = self.doctor.hours.filter(day__gte=next_day).order_by("day")
+        if not hours.exists():
+            hours = self.doctor.hours.filter(day__lte=next_day).order_by("-day")
+        hours = hours.first()
+        return hours
+
+    def _set_expired_datetime(self, start_datetime, duration):
+        self.expired_datetime = start_datetime + duration
+        self.save()
+
+    def _check_business_hours(self, hours):
+        created_time = self.created_datetime.time()
+
+        if self._in_range(created_time, hours.first_session) or self._in_range(
+            created_time, hours.second_session
+        ):
+            duration = timedelta(minutes=20)
+            self._set_expired_datetime(self.created_time, duration)
+
+        elif hours.has_lunch_time and self._in_range(
+            created_time, hours.lunch_time_range
+        ):
+            duration = timedelta(minutes=15)
+            self._set_expired_datetime(self.created_time, duration)
