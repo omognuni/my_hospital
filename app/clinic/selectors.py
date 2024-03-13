@@ -1,3 +1,4 @@
+from clinic.enums import RequestStatus
 from clinic.models import Doctor, TreatmentRequest
 from django.db.models import Q
 
@@ -31,7 +32,9 @@ def filter_requests(filters):
     doctor_id = filters.get("doctor_id", None)
     request_queryset = TreatmentRequest.objects.all()
     if doctor_id:
-        request_queryset = request_queryset.filter(doctor_id=doctor_id)
+        request_queryset = request_queryset.filter(doctor_id=doctor_id).exclude(
+            status=RequestStatus.ACCEPETED
+        )
     return request_queryset
 
 

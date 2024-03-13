@@ -2,7 +2,7 @@ from datetime import datetime, time, timedelta
 
 import pytest
 from clinic.enums import Days, RequestStatus
-from clinic.models import BusinessHours, Doctor, Patient, TreatmentRequest
+from clinic.models import BusinessHour, Doctor, Patient, TreatmentRequest
 
 
 def get_next_weekday(weekday, date):
@@ -20,7 +20,7 @@ def test_request_treatment_at_closed_time():
     doctor = Doctor.objects.create(name="의사")
     opening_time = time(9, 0)
     closing_time = time(18, 0)
-    hours = BusinessHours.objects.create(
+    hours = BusinessHour.objects.create(
         doctor=doctor,
         day=Days.monday.value,
         opening_time=opening_time,
@@ -44,7 +44,7 @@ def test_request_treatment():
     doctor = Doctor.objects.create(name="의사")
     opening_time = time(9, 0)
     closing_time = time(18, 0)
-    hours = BusinessHours.objects.create(
+    hours = BusinessHour.objects.create(
         doctor=doctor,
         day=Days.monday.value,
         opening_time=opening_time,

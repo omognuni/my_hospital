@@ -1,6 +1,6 @@
 from clinic.selectors import get_doctors, get_requests
 from clinic.serializers import DoctorSerializer, TreatmentRequestSerializer
-from clinic.services import create_doctor, create_request
+from clinic.services import accept_request, create_doctor, create_request
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, serializers, status, viewsets
@@ -101,3 +101,18 @@ class TreatmentRequestApi(APIView):
 
         output_serializer = self.OutputSerializer(treatment_request)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class RequestAcceptView(APIView):
+
+    class OutputSerializer(serializers.Serializer):
+        id = serializers.IntegerField()
+        patient = serializers.CharField(source="patient.name")
+        desired_datetime = serializers.DateTimeField()
+        expired_datetime = serializers.DateTimeField()
+
+    def patch(self, request, id):
+        treatment_request = accept_request(id)
+
+        output_serializer = self.OutputSerializer(treatment_request)
+        return Response(output_serializer.data, status=status.HTTP_200_OK)
