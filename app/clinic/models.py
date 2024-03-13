@@ -69,7 +69,7 @@ class UninsuredTreatment(models.Model):
         return super().save(*args, **kwargs)
 
 
-class BusinessHours(models.Model):
+class BusinessHour(models.Model):
     """
     영업시간
     """
@@ -174,7 +174,7 @@ class TreatmentRequest(models.Model):
         # self.doctor.hours 에서 해당 요일의 영업시간 가져오기
         try:
             hours = self.doctor.hours.get(day=day)
-        except BusinessHours.DoesNotExist:
+        except BusinessHour.DoesNotExist:
             return False
 
         desired_time = self.desired_datetime.time()

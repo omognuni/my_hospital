@@ -1,8 +1,9 @@
 from clinic.models import (
-    BusinessHours,
+    BusinessHour,
     Department,
     Doctor,
     Hospital,
+    Patient,
     TreatmentRequest,
     UninsuredTreatment,
 )
@@ -28,10 +29,10 @@ class TreatmentRequestSerializer(serializers.ModelSerializer):
         ]
 
 
-class BusinessHoursSerializer(serializers.ModelSerializer):
+class BusinessHourSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = BusinessHours
+        model = BusinessHour
         fields = [
             "id",
             "day",
@@ -71,7 +72,7 @@ class DoctorSerializer(serializers.ModelSerializer):
     hospital = HospitalSerializer(read_only=True)
     departments = DepartmentSerializer(read_only=True, many=True)
     treatments = UninsuredTreatmentSerializer(read_only=True, many=True)
-    business_hours = BusinessHoursSerializer(read_only=True, many=True, source="hours")
+    business_hours = BusinessHourSerializer(read_only=True, many=True, source="hours")
 
     class Meta:
         model = Doctor
@@ -86,3 +87,10 @@ class DoctorSerializer(serializers.ModelSerializer):
             "department_ids",
             "treatment_ids",
         ]
+
+
+class PatientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Patient
+        fields = ["id", "name"]

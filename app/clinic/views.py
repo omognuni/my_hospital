@@ -1,4 +1,4 @@
-from clinic.selectors import get_doctors
+from clinic.selectors import get_doctors, get_requests
 from clinic.serializers import DoctorSerializer, TreatmentRequestSerializer
 from clinic.services import create_doctor, create_request
 from drf_spectacular.utils import extend_schema
@@ -53,7 +53,13 @@ class TreatmentRequestApi(APIView):
         tags=["Treatment Requests"],
     )
     def get(self, request):
-        pass
+        filter_serializer = self.FilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        treatment_requests = get_requests(filter_serializer.validated_data)
+
+        output_serializer = self.serializer_class(treatment_requests, many=True)
+        return Response(output_serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         request=TreatmentRequestSerializer,
