@@ -145,7 +145,6 @@ class TreatmentRequest(models.Model):
 
             # self.doctor.hours에서 해당 요일의 영업시간 가져오기
             hours = self.doctor.hours.filter(day=day)
-            print(hours.query)
             if hours.exists():
                 hours = hours.first()
                 if self._in_range(created_time, hours.first_session) or self._in_range(
