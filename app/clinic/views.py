@@ -103,7 +103,7 @@ class TreatmentRequestApi(APIView):
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
 
-class RequestAcceptView(APIView):
+class RequestAcceptApi(APIView):
 
     class OutputSerializer(serializers.Serializer):
         id = serializers.IntegerField()

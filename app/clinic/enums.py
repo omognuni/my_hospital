@@ -24,7 +24,7 @@ class Days(Enum):
 
 class RequestStatus(str, Enum):
     PENDING = "대기중"
-    ACCEPETED = "수락됨"
+    ACCEPTED = "수락됨"
     REFUSED = "거절됨"
     EXPIRED = "만료됨"
 
