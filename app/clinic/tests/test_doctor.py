@@ -1,58 +1,13 @@
 from datetime import datetime, time, timedelta
 
 import pytest
-from clinic.enums import Days, RequestStatus
-from clinic.models import BusinessHour, Department, Doctor, Hospital
+from clinic.models import BusinessHour
 from clinic.serializers import DoctorSerializer
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from pytest_django import DjangoAssertNumQueries
 from rest_framework.test import APIClient
 
 DOCTOR_URL = reverse("clinic:doctor-list")
-
-
-@pytest.fixture
-def hospital():
-    return Hospital.objects.create(name="메라키병원")
-
-
-@pytest.fixture
-def doctors(hospital):
-    doctor = Doctor.objects.create(name="손웅래", hospital=hospital)
-    doctor2 = Doctor.objects.create(name="선재원", hospital=hospital)
-    department_names = ["정형외과", "내과", "일반의", "한의사"]
-    departments = [Department.objects.create(name=name) for name in department_names]
-    doctor.departments.add(*departments[:3])
-    doctor2.departments.add(*departments[2:])
-    return doctor, doctor2
-
-
-@pytest.fixture
-def doctor_with_hours(doctors):
-    doctor, doctor2 = doctors
-    opening_time = time(9, 0)
-    closing_time = time(19, 0)
-    # 평일만 넣기
-    for day in Days.values()[:5]:
-        BusinessHour.objects.create(
-            doctor=doctor,
-            day=day,
-            opening_time=opening_time,
-            closing_time=closing_time,
-        )
-    opening_time = time(9, 0)
-    closing_time = time(19, 0)
-    # 주말만 넣기
-    for day in Days.values()[5:]:
-        BusinessHour.objects.create(
-            doctor=doctor2,
-            day=day,
-            opening_time=opening_time,
-            closing_time=closing_time,
-        )
-    return doctor, doctor2
 
 
 @pytest.mark.django_db
