@@ -2,15 +2,12 @@ from datetime import datetime, time, timedelta
 
 import pytest
 from clinic.enums import Days, RequestStatus
-from clinic.models import (
-    BusinessHours,
-    Department,
-    Doctor,
-    Hospital,
-    Patient,
-    TreatmentRequest,
-    UninsuredTreatment,
-)
+from clinic.models import BusinessHour, Doctor, Patient, TreatmentRequest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
+from pytest_django import DjangoAssertNumQueries
+from rest_framework.test import APIClient
 
 
 def get_next_weekday(weekday, date):
@@ -28,7 +25,7 @@ def test_request_treatment_at_closed_time():
     doctor = Doctor.objects.create(name="의사")
     opening_time = time(9, 0)
     closing_time = time(18, 0)
-    hours = BusinessHours.objects.create(
+    hours = BusinessHour.objects.create(
         doctor=doctor,
         day=Days.monday.value,
         opening_time=opening_time,
@@ -52,14 +49,14 @@ def test_request_treatment():
     doctor = Doctor.objects.create(name="의사")
     opening_time = time(9, 0)
     closing_time = time(18, 0)
-    hours = BusinessHours.objects.create(
+    hours = BusinessHour.objects.create(
         doctor=doctor,
         day=Days.monday.value,
         opening_time=opening_time,
         closing_time=closing_time,
     )
     desired_datetime = datetime.combine(
-        get_next_weekday(hours.day, datetime.now()).date(), opening_time
+        get_next_weekday(Days.monday.value, datetime.now()).date(), opening_time
     )
 
     # when
@@ -73,9 +70,3 @@ def test_request_treatment():
         minutes=15
     )
     assert treatment_request.status == RequestStatus.PENDING
-
-
-@pytest.mark.django_db
-def test_search_doctor():
-    # given
-    doctor = Doctor.objects.create(name="손웅래")
