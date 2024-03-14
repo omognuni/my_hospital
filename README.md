@@ -54,9 +54,9 @@ python manage.py runserver
 테스트 코드: app/clinic/tests/test_doctor.py -  test_search_doctor_with_string
 
 
-  | Method | URL          | 쿼리 파라미터                               |
-  | ------ | ------------ | ------------------------------------------- |
-  | GET    | /api/doctors | search="메라키", time="2024-03-14 15:00:00" |
+  | Method | URL          | 쿼리 파라미터                                 |
+  | ------ | ------------ | --------------------------------------------- |
+  | GET    | /api/doctors | search="병원이름", time="2024-03-14 15:00:00" |
 
 ![alt text](image.png)
 
