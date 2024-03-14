@@ -1,5 +1,9 @@
 # My Hospital
 
+### ERD
+
+![alt text](image-4.png)
+
 ## 1. 프로젝트 세팅 방법
 ### 가상환경 실행
 ```
