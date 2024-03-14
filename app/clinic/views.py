@@ -103,7 +103,7 @@ class TreatmentRequestApi(APIView):
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
 
-class RequestAcceptView(APIView):
+class RequestAcceptApi(APIView):
 
     class OutputSerializer(serializers.Serializer):
         id = serializers.IntegerField()
@@ -111,6 +111,10 @@ class RequestAcceptView(APIView):
         desired_datetime = serializers.DateTimeField()
         expired_datetime = serializers.DateTimeField()
 
+    @extend_schema(
+        responses={201: OutputSerializer},
+        tags=["Treatment Requests"],
+    )
     def patch(self, request, id):
         treatment_request = accept_request(id)
 

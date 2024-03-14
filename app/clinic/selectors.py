@@ -4,7 +4,11 @@ from django.db.models import Q
 
 
 def filter_doctors(filters):
-    doctor_queryset = Doctor.objects.all()
+    doctor_queryset = (
+        Doctor.objects.select_related("hospital")
+        .prefetch_related("hours", "departments", "treatments")
+        .all()
+    )
     search = filters.get("search", None)
     time = filters.get("time", None)
     if search:
@@ -30,10 +34,11 @@ def filter_doctors(filters):
 
 def filter_requests(filters):
     doctor_id = filters.get("doctor_id", None)
-    request_queryset = TreatmentRequest.objects.all()
+
+    request_queryset = TreatmentRequest.objects.select_related("patient").all()
     if doctor_id:
         request_queryset = request_queryset.filter(doctor_id=doctor_id).exclude(
-            status=RequestStatus.ACCEPETED
+            status=RequestStatus.ACCEPTED
         )
     return request_queryset
 

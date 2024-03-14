@@ -139,7 +139,7 @@ class TreatmentRequest(models.Model):
 
     @property
     def is_expired(self):
-        if self.status == RequestStatus.EXPIRED:
+        if self.status == RequestStatus.EXPIRED or not self.is_available:
             return True
         if self.expired_datetime is None:
             # created_datetime 요일
@@ -164,8 +164,7 @@ class TreatmentRequest(models.Model):
                 self._set_expired_datetime(start_date, duration)
 
         if self.expired_datetime <= datetime.now():
-            self.status = RequestStatus.EXPIRED
-            self.save()
+            self._set_status(RequestStatus.EXPIRED)
             return True
 
         return False
@@ -174,14 +173,15 @@ class TreatmentRequest(models.Model):
     def is_available(self):
         # 과거의 시간으로 예약 금지
         if self.desired_datetime <= datetime.now():
+            self._set_status(RequestStatus.REFUSED)
             return False
-        # desired_datetime을 요일로 분리
         day = self.desired_datetime.weekday()
 
         # self.doctor.hours 에서 해당 요일의 영업시간 가져오기
         try:
             hours = self.doctor.hours.get(day=day)
         except BusinessHour.DoesNotExist:
+            self._set_status(RequestStatus.REFUSED)
             return False
 
         desired_time = self.desired_datetime.time()
@@ -190,7 +190,7 @@ class TreatmentRequest(models.Model):
             desired_time, hours.second_session
         ):
             return True
-
+        self._set_status(RequestStatus.REFUSED)
         return False
 
     def _in_range(self, time, time_range):
@@ -224,3 +224,7 @@ class TreatmentRequest(models.Model):
         ):
             duration = timedelta(minutes=15)
             self._set_expired_datetime(self.created_time, duration)
+
+    def _set_status(self, status):
+        self.status = status
+        self.save()

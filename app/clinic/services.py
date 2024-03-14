@@ -24,12 +24,12 @@ def create_request(validated_data):
 
 def accept_request(request_id):
     try:
-        treatment_request = TreatmentRequest.objects.get(request_id)
+        treatment_request = TreatmentRequest.objects.get(id=request_id)
     except TreatmentRequest.DoesNotExist:
         raise ValidationError({"detail": "존재하지 않는 진료 요청입니다."})
 
     if treatment_request.is_expired:
         raise ValidationError({"detail": "만료된 요청입니다."})
-    treatment_request.status = RequestStatus.ACCEPETED
+    treatment_request.status = RequestStatus.ACCEPTED
     treatment_request.save()
     return treatment_request

@@ -1,4 +1,4 @@
-from clinic.views import DoctorApi, TreatmentRequestApi
+from clinic.views import DoctorApi, RequestAcceptApi, TreatmentRequestApi
 from clinic.viewsets import (
     BusinessHourViewSet,
     DepartmentViewSet,
@@ -24,8 +24,16 @@ urlpatterns = [
     path(r"doctors/", DoctorApi.as_view(), name="doctor-list"),
     path(
         r"treatment-requests/",
-        TreatmentRequestApi.as_view(),
-        name="treatment-request-list",
+        include(
+            [
+                path("", TreatmentRequestApi.as_view(), name="treatment-request-list"),
+                path(
+                    r"<int:id>/accept/",
+                    RequestAcceptApi.as_view(),
+                    name="treatment-request-accept",
+                ),
+            ]
+        ),
     ),
     path("", include(router.urls)),
 ]
