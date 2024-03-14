@@ -111,6 +111,10 @@ class RequestAcceptApi(APIView):
         desired_datetime = serializers.DateTimeField()
         expired_datetime = serializers.DateTimeField()
 
+    @extend_schema(
+        responses={201: OutputSerializer},
+        tags=["Treatment Requests"],
+    )
     def patch(self, request, id):
         treatment_request = accept_request(id)
 
