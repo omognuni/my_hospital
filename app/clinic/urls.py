@@ -28,7 +28,7 @@ urlpatterns = [
             [
                 path("", TreatmentRequestApi.as_view(), name="treatment-request-list"),
                 path(
-                    r"accept/<int:id>/",
+                    r"<int:id>/accept/",
                     RequestAcceptApi.as_view(),
                     name="treatment-request-accept",
                 ),
