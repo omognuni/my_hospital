@@ -31,11 +31,16 @@ def hospital():
 
 
 @pytest.fixture
-def doctors(hospital):
-    doctor = Doctor.objects.create(name="손웅래", hospital=hospital)
-    doctor2 = Doctor.objects.create(name="선재원", hospital=hospital)
+def departments():
     department_names = ["정형외과", "내과", "일반의", "한의사"]
     departments = [Department.objects.create(name=name) for name in department_names]
+    return departments
+
+
+@pytest.fixture
+def doctors(hospital, departments):
+    doctor = Doctor.objects.create(name="손웅래", hospital=hospital)
+    doctor2 = Doctor.objects.create(name="선재원", hospital=hospital)
     doctor.departments.add(*departments[:3])
     doctor2.departments.add(*departments[2:])
     return doctor, doctor2

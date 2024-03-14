@@ -1,13 +1,34 @@
 from datetime import datetime, time, timedelta
 
 import pytest
-from clinic.models import BusinessHour
+from clinic.models import BusinessHour, Doctor, UninsuredTreatment
 from clinic.serializers import DoctorSerializer
 from django.urls import reverse
 from pytest_django import DjangoAssertNumQueries
 from rest_framework.test import APIClient
 
 DOCTOR_URL = reverse("clinic:doctor-list")
+
+
+@pytest.mark.django_db
+def test_create_doctor(hospital, departments):
+    # given
+    treatment = UninsuredTreatment.objects.create(name="다이어트약")
+    data = {
+        "name": "테스트",
+        "hospital_id": hospital.id,
+        "department_ids": [departments[0].id, departments[1].id],
+        "treatment_ids": [treatment.id],
+    }
+    # when
+    client = APIClient()
+    res = client.post(DOCTOR_URL, data)
+
+    # then
+    doctor = Doctor.objects.get(name=data["name"])
+    serializer = DoctorSerializer(doctor)
+    assert res.status_code == 201
+    assert res.data == serializer.data
 
 
 @pytest.mark.django_db
@@ -24,8 +45,13 @@ def test_query_doctor_list(doctor_with_hours, django_assert_max_num_queries):
 
 @pytest.mark.django_db
 def test_search_doctor_with_string(doctors, django_assert_max_num_queries):
+    """
+    의사 검색 로직 테스트
+    """
     # given
     doctor, doctor2 = doctors
+    treatment = UninsuredTreatment.objects.create(name="다이어트약")
+    doctor2.treatments.add(treatment)
 
     # when
     client = APIClient()

@@ -13,6 +13,10 @@ from rest_framework.test import APIClient
 
 @pytest.mark.django_db
 def test_post_treatment_requests(next_weekday, doctor_with_hours, patients):
+    """
+    진료 요청 테스트
+    """
+
     # given
     doctor, _ = doctor_with_hours
     patient = patients[0]
@@ -40,7 +44,40 @@ def test_post_treatment_requests(next_weekday, doctor_with_hours, patients):
 
 
 @pytest.mark.django_db
+def test_get_treatment_requests_by_doctor_id(
+    treatment_requests, doctors, django_assert_max_num_queries
+):
+    """
+    진료 요청 검색 테스트
+    """
+    # given
+    doctor, _ = doctors
+    treatment_requests = TreatmentRequest.objects.filter(doctor=doctor)
+    half = treatment_requests.count() // 2
+    for request in treatment_requests[:half]:
+        request.status = RequestStatus.ACCEPTED
+        request.save()
+    # when
+    client = APIClient()
+    url = reverse("clinic:treatment-request-list")
+    params = {"doctor_id": doctor.id}
+    with django_assert_max_num_queries(2):
+        res = client.get(url, params)
+
+    serializer = TreatmentRequestApi.OutputSerializer(
+        treatment_requests[half:], many=True
+    )
+    # then
+    assert res.status_code == 200
+    assert res.data == serializer.data
+
+
+@pytest.mark.django_db
 def test_accept_treatment_request(next_weekday, doctor_with_hours, patients):
+    """
+    진료 요청 수락 테스트
+    """
+
     # given
     doctor, _ = doctor_with_hours
     patient = patients[0]
@@ -112,32 +149,6 @@ def test_get_treatment_requests(treatment_requests, django_assert_max_num_querie
         res = client.get(url)
 
     serializer = TreatmentRequestApi.OutputSerializer(treatment_requests, many=True)
-    # then
-    assert res.status_code == 200
-    assert res.data == serializer.data
-
-
-@pytest.mark.django_db
-def test_get_treatment_requests_by_doctor_id(
-    treatment_requests, doctors, django_assert_max_num_queries
-):
-    # given
-    doctor, _ = doctors
-    treatment_requests = TreatmentRequest.objects.filter(doctor=doctor)
-    half = treatment_requests.count() // 2
-    for request in treatment_requests[:half]:
-        request.status = RequestStatus.ACCEPTED
-        request.save()
-    # when
-    client = APIClient()
-    url = reverse("clinic:treatment-request-list")
-    params = {"doctor_id": doctor.id}
-    with django_assert_max_num_queries(2):
-        res = client.get(url, params)
-
-    serializer = TreatmentRequestApi.OutputSerializer(
-        treatment_requests[half:], many=True
-    )
     # then
     assert res.status_code == 200
     assert res.data == serializer.data
