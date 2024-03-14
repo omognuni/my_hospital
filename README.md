@@ -4,7 +4,7 @@
 ### 가상환경 실행
 ```
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate (윈도우의 경우  ./venv/Scripts/activate)
 ```
 ### requirements 설치
 ```
